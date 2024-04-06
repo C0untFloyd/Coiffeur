@@ -16,7 +16,7 @@ import functools
 import skimage.transform
 from tqdm import tqdm
 
-from IPython import embed
+#from IPython import embed
 
 from criteria.lpips import networks_basic as networks
 from criteria import lpips as util

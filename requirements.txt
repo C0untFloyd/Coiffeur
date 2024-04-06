@@ -1,0 +1,21 @@
+--extra-index-url https://download.pytorch.org/whl/cu118
+
+protobuf==3.20.*
+numpy==1.23.5
+opencv-python==4.7.0.72
+pillow==9.5.0
+torch==2.0.1+cu118; sys_platform != 'darwin'
+torch==2.0.1; sys_platform == 'darwin'
+torchvision==0.15.2+cu118; sys_platform != 'darwin'
+torchvision==0.15.2; sys_platform == 'darwin'
+gradio
+regex
+ftfy
+tqdm
+opencv-python
+scikit-image
+kornia==0.6.7
+face-alignment==1.3.5
+Ninja
+chardet
+#dlib==19.22.1

@@ -1,0 +1,16 @@
+.vs
+.idea
+pretrained_models
+temp
+__pycache__
+*.pth
+*.whl
+/start.bat
+/env
+.vscode
+output
+temp
+config.yaml
+run.bat
+venv
+start.sh
