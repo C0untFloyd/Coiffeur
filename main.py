@@ -2,7 +2,11 @@ import time
 import gradio as gr
 
 def on_clicked_start(inputimg, txtdesc, refimg):
-    from hairmain import hairstyle_editing
+    from hairmain import hairstyle_editing, align_faces
+
+    align_faces(inputimg, "./test_images/src_img/")
+    if refimg is not None:
+        refimg = align_faces(refimg, "./test_images/ref_img/")
 
     _, finalimg = hairstyle_editing(inputimg, txtdesc, refimg)
     return finalimg
@@ -23,10 +27,10 @@ def run():
         with gr.Blocks(title=f'HairCLIP UI', css=mycss) as ui:
             with gr.Row():
                 with gr.Column():
-                    inputimg = gr.Image(label='Input Image', interactive=True)
+                    inputimg = gr.Image(label='Input Image', sources=["upload"], type="filepath", interactive=True)
                 with gr.Column():
                     txtdesc = gr.Textbox(label="Enter hairstyle or hair color", placeholder="bowl cut hairstyle, blue hair, quiff hairstyle", interactive=True)
-                    refimg = gr.Image(label='Ref Image with Hairstyle', interactive=True)
+                    refimg = gr.Image(label='Ref Image with Hairstyle', sources=["upload"], type="filepath", interactive=True)
             with gr.Row():
                 bt_start = gr.Button("Start")
             with gr.Row():

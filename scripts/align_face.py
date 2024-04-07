@@ -34,3 +34,4 @@ for im in Path(args.unaligned_dir).glob("*.*"):
             face.save(Path(args.output_dir) / (im.stem+f"_{i}.jpg"))
         else:
             face.save(Path(args.output_dir) / (im.stem + f".jpg"))
+

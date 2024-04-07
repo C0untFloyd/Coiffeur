@@ -1,10 +1,12 @@
 .vs
 .idea
 pretrained_models
+test_images
 temp
 __pycache__
 *.pth
 *.whl
+
 /start.bat
 /env
 .vscode

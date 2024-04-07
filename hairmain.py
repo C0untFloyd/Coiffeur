@@ -1,7 +1,12 @@
 import os
 import torch
 import numpy as np
-from PIL import Image
+import dlib
+from pathlib import Path
+import torchvision
+from utils.shape_predictor import align_face
+import PIL
+
 from torchvision import transforms
 from scripts.Embedding import Embedding
 from scripts.text_proxy import TextProxy
@@ -19,7 +24,7 @@ from utils.options import Options
 
 def hairstyle_editing(inputimg, textdesc, refimg):
     opts = Options().parse(jupyter=False)
-    src_name = '168125'# source image name you want to edit
+    src_name = Path(inputimg).stem
 
     image_transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])])
     g_ema, mean_latent_code, seg = load_base_models(opts)
@@ -31,7 +36,7 @@ def hairstyle_editing(inputimg, textdesc, refimg):
                     latent_F=inverted_latent_F.detach().cpu().numpy())
     src_latent = torch.from_numpy(np.load(f'{opts.src_latent_dir}/{src_name}.npz')['latent_in']).cuda()
     src_feature = torch.from_numpy(np.load(f'{opts.src_latent_dir}/{src_name}.npz')['latent_F']).cuda()
-    src_image = image_transform(Image.open(f'{opts.src_img_dir}/{src_name}.jpg').convert('RGB')).unsqueeze(0).cuda()
+    src_image = image_transform(PIL.Image.open(f'{opts.src_img_dir}/{src_name}.jpg').convert('RGB')).unsqueeze(0).cuda()
     input_mask = torch.argmax(seg(src_image)[1], dim=1).long().clone().detach()
 
     bald_proxy = BaldProxy(g_ema, opts.bald_path)
@@ -51,6 +56,9 @@ def hairstyle_editing(inputimg, textdesc, refimg):
 
     #global_cond: e.g. 'bowl cut hairstyle' for text_mode; '058728.jpg' for ref_mode
     global_cond=textdesc
+    if refimg is not None:
+        global_cond = refimg
+
 
     if paint_the_mask:
         modified_mask = painting_mask(input_mask)
@@ -81,3 +89,31 @@ def hairstyle_editing(inputimg, textdesc, refimg):
     test1 = process_display_input(src_feature)
     test2 = process_display_input(edited_hairstyle_img)
     return test1, test2
+
+
+def align_faces(path, target_dir):
+    output_dir = target_dir
+    testname = os.path.join(output_dir, f"{Path(path).stem}.jpg")
+    if os.path.exists(testname):
+        return f"{Path(path).stem}.jpg"
+    
+    landmark_path = "./pretrained_models/shape_predictor_68_face_landmarks.dat"
+    predictor = dlib.shape_predictor(landmark_path)
+    output_size = 1024
+
+    faces = align_face(path,predictor)
+    filename = Path(path).stem
+    for i,face in enumerate(faces):
+        if(output_size):
+            factor = 1024//output_size
+            assert output_size*factor == 1024
+            face_tensor = torchvision.transforms.ToTensor()(face).unsqueeze(0).cuda()
+            face_tensor_lr = face_tensor[0].cpu().detach().clamp(0, 1)
+            face = torchvision.transforms.ToPILImage()(face_tensor_lr)
+        if factor != 1:
+            face = face.resize((output_size, output_size), PIL.Image.LANCZOS)
+        if len(faces) > 1:
+            face.save(os.path.join(output_dir, f"{filename}_{i}.jpg"))
+        else:
+            face.save(os.path.join(output_dir, f"{filename}.jpg"))
+    return f"{filename}.jpg"
