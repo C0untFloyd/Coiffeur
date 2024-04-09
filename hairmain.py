@@ -22,7 +22,7 @@ from utils.model_utils import load_base_models
 from utils.options import Options
 
 
-def hairstyle_editing(inputimg, textdesc, refimg):
+def hairstyle_editing(inputimg, textdesc, refimg, color_cond):
     opts = Options().parse(jupyter=False)
     src_name = Path(inputimg).stem
 
@@ -76,7 +76,7 @@ def hairstyle_editing(inputimg, textdesc, refimg):
     if global_cond is not None:
         assert isinstance(global_cond, str)
         latent_bald, visual_bald_list = bald_proxy(src_latent)
-        display_image_list(visual_bald_list)
+        #display_image_list(visual_bald_list)
 
         if global_cond.endswith('.jpg') or global_cond.endswith('.png'):
             latent_global, visual_global_list = ref_proxy(global_cond, src_image, painted_mask=painted_mask)
@@ -86,6 +86,11 @@ def hairstyle_editing(inputimg, textdesc, refimg):
 
     src_feature, edited_hairstyle_img = hairstyle_feature_blending(g_ema, seg, src_latent, src_feature, input_mask, latent_bald=latent_bald,
                                                 latent_global=latent_global, latent_local=latent_local, local_blending_mask=local_blending_mask)
+    
+    if color_cond is not None:
+        print(f"Color correct final image using '{color_cond}'")
+        visual_color_list, visual_final_list = color_proxy(color_cond, edited_hairstyle_img, src_latent, src_feature)
+        return None, process_display_input(visual_final_list[-1])        
     test1 = process_display_input(src_feature)
     test2 = process_display_input(edited_hairstyle_img)
     return test1, test2

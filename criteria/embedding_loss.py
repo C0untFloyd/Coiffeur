@@ -8,7 +8,7 @@ class EmbeddingLossBuilder(torch.nn.Module):
         super(EmbeddingLossBuilder, self).__init__()
         self.parsed_loss = [[opts.l2_lambda_embedding, 'l2'], [opts.percept_lambda_embedding, 'percep']]
         self.l2 = torch.nn.MSELoss()
-        self.percept = lpips.PerceptualLoss(model="net-lin", net="vgg", use_gpu=False).cuda()
+        self.percept = lpips.PerceptualLoss(model="net-lin", net="vgg", use_gpu=True).cuda()
         self.percept.eval()
 
 
